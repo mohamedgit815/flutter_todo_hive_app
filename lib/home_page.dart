@@ -5,7 +5,7 @@ import 'package:flutter_hive_app/add_person_page.dart';
 import 'package:flutter_hive_app/hive_model.dart';
 import 'package:flutter_hive_app/show_data.dart';
 import 'package:flutter_hive_app/update_data.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -44,38 +44,39 @@ class _HomePageState extends State<HomePage> {
           },
           child: const Icon(Icons.add),
         ),
-        body: ListView.builder(
-            itemCount: _person.length  ,
-            itemBuilder: (BuildContext context,int i) {
-              final Person _personModel = _person.get(i) as Person;
-              return ListTile(
-                key: ValueKey('${_personModel.name}${_personModel.age}'),
-                  title: Text(_personModel.name),
-                  subtitle: Text(_personModel.age.toString()),
-                leading: IconButton(
-                  key: ValueKey('${_personModel.name}${_personModel.age}'),
-                  icon: const Icon(Icons.update,color: Colors.red),
-                  onPressed: ()  {
-                       Navigator.push(context, CupertinoPageRoute(builder: (context)=>UpdatePersonPage(
-                         index: i,
-                         name: _personModel.name,age: _personModel.age.toString(),)));
-                  },
-                ),
-                trailing: IconButton(
-                  key: ValueKey('${_personModel.name}${_personModel.age}'),
-                  icon: const Icon(Icons.delete,color: Colors.red),
-                  onPressed: () {
-                       setState(() {
-                         _person.delete(i);
-                       });
-                  },
-                ),
-                onTap: (){
-                  Navigator.push(context, CupertinoPageRoute(
-                      builder: (context)=>ShowPersonData(name: _personModel.name, age: _personModel.age)));
-                },
-              );
-            })
+        body: ValueListenableBuilder(
+            valueListenable: _person.listenable(),
+            builder: (BuildContext context,Box data,_)=> ListView.builder(
+                itemCount: data.length  ,
+                itemBuilder: (BuildContext context,int i) {
+                  final Person _personModel = data.get(i) as Person;
+                  return ListTile(
+                    key: ValueKey('${_personModel.name}${_personModel.age}'),
+                    title: Text(_personModel.name),
+                    subtitle: Text(_personModel.age.toString()),
+                    leading: IconButton(
+                      key: ValueKey('${_personModel.name}${_personModel.age}'),
+                      icon: const Icon(Icons.update,color: Colors.red),
+                      onPressed: ()  {
+                        Navigator.push(context, CupertinoPageRoute(builder: (context)=>UpdatePersonPage(
+                          index: i,
+                          name: _personModel.name,age: _personModel.age.toString(),)));
+                      },
+                    ),
+                    trailing: IconButton(
+                      key: ValueKey('${_personModel.name}${_personModel.age}'),
+                      icon: const Icon(Icons.delete,color: Colors.red),
+                      onPressed: () {
+                        _person.delete(i);
+                      },
+                    ),
+                    onTap: (){
+                      Navigator.push(context, CupertinoPageRoute(
+                          builder: (context)=>ShowPersonData(name: _personModel.name, age: _personModel.age)));
+                    },
+                  );
+                })
+        )
     );
   }
 }
